@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: external
+    database: CT_PRIYANSH_MATHUR_DB
+    schema: EXTERNAL
+
+    tables:
+      - name: EXT_CAMPAIGNS
+      - name: EXT_CUSTOMERS
+      - name: EXT_EMPLOYEES
+      - name: EXT_ORDERS
+      - name: EXT_PRODUCTS
+      - name: EXT_STORES
+      - name: EXT_SUPPLIERS
