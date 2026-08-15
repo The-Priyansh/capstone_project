@@ -8,7 +8,46 @@
     )
 }}
 
-WITH flattened AS (
+WITH source_files AS (
+
+    SELECT
+        RAW_DATA,
+        _SOURCE_FILE,
+
+        TRY_TO_DATE(
+            REGEXP_SUBSTR(
+                _SOURCE_FILE,
+                '[0-9]{4}-[0-9]{2}-[0-9]{2}'
+            )
+        ) AS source_snapshot_date
+
+    FROM {{ ref('bronze_customers') }}
+
+),
+
+latest_source_date AS (
+
+    SELECT
+        MAX(source_snapshot_date) AS max_source_snapshot_date
+    FROM source_files
+
+),
+
+latest_source AS (
+
+    SELECT
+        s.RAW_DATA,
+        s._SOURCE_FILE,
+        s.source_snapshot_date
+
+    FROM source_files s
+    CROSS JOIN latest_source_date d
+
+    WHERE s.source_snapshot_date = d.max_source_snapshot_date
+
+),
+
+flattened AS (
 
     SELECT
         customer.value:customer_id::VARCHAR AS customer_id,
@@ -18,12 +57,12 @@ WITH flattened AS (
 
         customer.value AS raw_customer_data,
 
-        b._SOURCE_FILE
+        _SOURCE_FILE
 
-    FROM {{ ref('bronze_customers') }} AS b,
+    FROM latest_source,
 
     LATERAL FLATTEN(
-        INPUT => b.RAW_DATA:customers_data
+        INPUT => RAW_DATA:customers_data
     ) AS customer
 
 ),
@@ -39,9 +78,7 @@ latest_customer AS (
 
     QUALIFY ROW_NUMBER() OVER (
         PARTITION BY customer_id
-        ORDER BY
-            last_modified_date DESC,
-            _SOURCE_FILE DESC
+        ORDER BY _SOURCE_FILE DESC
     ) = 1
 
 )
