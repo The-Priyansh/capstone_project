@@ -87,7 +87,11 @@ models:
     gold:
       +schema: GOLD
       +materialized: table
-      
+
+
+  elementary:
+    +schema: ELEMENTARY
+
 snapshots:
   capstone_project:
     +target_schema: SNAPSHOTS
