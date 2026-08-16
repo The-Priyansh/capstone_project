@@ -88,7 +88,10 @@ models:
       +schema: GOLD
       +materialized: table
 
-
+    reporting:
+      +schema: REPORTING
+      +materialized: view
+      
   elementary:
     +schema: ELEMENTARY
 

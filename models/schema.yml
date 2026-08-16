@@ -1,0 +1,486 @@
+version: 2
+
+models:
+
+  # ============================================================
+  # BRONZE
+  # ============================================================
+
+  - name: bronze_campaigns
+    columns:
+      - name: _SOURCE_FILE
+        tests:
+          - not_null
+
+  - name: bronze_customers
+    columns:
+      - name: _SOURCE_FILE
+        tests:
+          - not_null
+
+  - name: bronze_employees
+    columns:
+      - name: _SOURCE_FILE
+        tests:
+          - not_null
+
+  - name: bronze_orders
+    columns:
+      - name: _SOURCE_FILE
+        tests:
+          - not_null
+
+  - name: bronze_products
+    columns:
+      - name: _SOURCE_FILE
+        tests:
+          - not_null
+
+  - name: bronze_stores
+    columns:
+      - name: _SOURCE_FILE
+        tests:
+          - not_null
+
+  - name: bronze_suppliers
+    columns:
+      - name: _SOURCE_FILE
+        tests:
+          - not_null
+
+
+  # ============================================================
+  # SILVER
+  # ============================================================
+
+  - name: silver_campaigns
+    columns:
+      - name: campaign_id
+        tests:
+          - not_null
+          - unique
+
+  - name: silver_customers
+    columns:
+      - name: customer_id
+        tests:
+          - not_null
+          - unique
+
+      - name: customer_segment
+        tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - "Middle-aged"
+                  - "Senior"
+                  - "Young"
+
+  - name: silver_employees
+    columns:
+      - name: employee_id
+        tests:
+          - not_null
+          - unique
+
+  - name: silver_products
+    columns:
+      - name: product_id
+        tests:
+          - not_null
+          - unique
+
+  - name: silver_stores
+    columns:
+      - name: store_id
+        tests:
+          - not_null
+          - unique
+
+  - name: silver_suppliers
+    columns:
+      - name: supplier_id
+        tests:
+          - not_null
+          - unique
+
+  - name: silver_orders
+    columns:
+
+      - name: order_id
+        tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        tests:
+          - not_null
+
+      - name: employee_id
+        tests:
+          - not_null
+
+      - name: campaign_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('silver_campaigns')
+                field: campaign_id
+
+      - name: store_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_stores')
+                field: store_id
+
+      - name: order_date_only
+        tests:
+          - not_null
+
+      - name: order_status
+        tests:
+          - not_null
+
+      - name: delivery_status
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "On Time"
+
+  - name: silver_order_items
+    columns:
+
+      - name: order_item_key
+        tests:
+          - not_null
+          - unique
+
+      - name: order_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_orders')
+                field: order_id
+
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_products')
+                field: product_id
+
+      - name: store_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_stores')
+                field: store_id
+
+  - name: silver_product_history
+    columns:
+
+      - name: product_history_key
+        tests:
+          - not_null
+          - unique
+
+      - name: product_id
+        tests:
+          - not_null
+
+      - name: source_snapshot_date
+        tests:
+          - not_null
+
+      - name: supplier_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_suppliers')
+                field: supplier_id
+
+  - name: silver_inventory
+    columns:
+
+      - name: inventory_key
+        tests:
+          - not_null
+          - unique
+
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_products')
+                field: product_id
+
+      - name: inventory_date
+        tests:
+          - not_null
+
+      - name: supplier_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('silver_suppliers')
+                field: supplier_id
+
+
+  # ============================================================
+  # GOLD DIMENSIONS
+  # ============================================================
+
+  - name: dim_date
+    columns:
+
+      - name: date_key
+        tests:
+          - not_null
+          - unique
+
+      - name: full_date
+        tests:
+          - not_null
+          - unique
+
+
+  - name: dim_product
+    columns:
+
+      - name: product_key
+        tests:
+          - not_null
+          - unique
+
+      - name: product_id
+        tests:
+          - not_null
+
+
+  - name: dim_store
+    columns:
+
+      - name: store_key
+        tests:
+          - not_null
+          - unique
+
+      - name: store_id
+        tests:
+          - not_null
+          - unique
+
+
+  - name: dim_supplier
+    columns:
+
+      - name: supplier_key
+        tests:
+          - not_null
+          - unique
+
+      - name: supplier_id
+        tests:
+          - not_null
+          - unique
+
+
+  - name: dim_marketing_campaign
+    columns:
+
+      - name: campaign_key
+        tests:
+          - not_null
+          - unique
+
+      - name: campaign_id
+        tests:
+          - not_null
+          - unique
+
+      - name: campaign_type
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "Discount Event"
+                  - "Seasonal Promotion"
+                  - "Product Launch"
+                  - "Brand Awareness"
+                  - "Clearance"
+
+
+  # ============================================================
+  # GOLD FACTS
+  # ============================================================
+
+  - name: fact_inventory
+    columns:
+
+      - name: inventory_key
+        tests:
+          - not_null
+          - unique
+
+      - name: product_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_key
+
+      - name: date_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+
+      - name: supplier_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_supplier')
+                field: supplier_key
+
+
+  - name: fact_marketing_performance
+    columns:
+
+      - name: marketing_performance_key
+        tests:
+          - not_null
+          - unique
+
+      - name: campaign_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_marketing_campaign')
+                field: campaign_key
+
+      - name: date_key
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+
+
+  # ============================================================
+  # REPORTING VIEWS
+  # ============================================================
+
+  - name: rpt_inventory_stock_turnover
+    columns:
+
+      - name: product_id
+        tests:
+          - not_null
+
+
+  - name: rpt_inventory_movement
+    columns:
+
+      - name: product_id
+        tests:
+          - not_null
+
+      - name: movement_class
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "FAST_MOVING"
+                  - "MEDIUM_MOVING"
+                  - "SLOW_MOVING"
+
+
+  - name: rpt_inventory_valuation
+    columns:
+
+      - name: product_id
+        tests:
+          - not_null
+
+
+  - name: rpt_marketing_roi_by_type
+    columns:
+
+      - name: campaign_type
+        tests:
+          - not_null
+
+
+  - name: rpt_marketing_sales_impact
+    columns:
+
+      - name: campaign_id
+        tests:
+          - not_null
+
+
+  - name: rpt_marketing_customer_engagement
+    columns:
+
+      - name: campaign_id
+        tests:
+          - not_null
+
+
+  - name: rpt_supplier_contribution
+    columns:
+
+      - name: supplier_id
+        tests:
+          - not_null
+
+      - name: category
+        tests:
+          - not_null
+
+
+  - name: rpt_supplier_delivery_performance
+    columns:
+
+    - name: supplier_id
+      tests:
+        - not_null
+
+    - name: on_time_delivery_rate
+      tests:
+        - not_null
+
+    - name: delivery_performance_category
+      tests:
+        - not_null
+        - accepted_values:
+            arguments:
+              values:
+                - "ON_TIME"
+                - "MOSTLY_ON_TIME"
+                - "DELAYED"
+
+  - name: rpt_supplier_concentration
+    columns:
+
+      - name: supplier_id
+        tests:
+          - not_null
