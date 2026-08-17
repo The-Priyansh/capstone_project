@@ -94,7 +94,6 @@ models:
       
   elementary:
     +schema: ELEMENTARY
-
 snapshots:
   capstone_project:
     +schema: "{{ env_var('DBT_SNAPSHOT_SCHEMA') }}"
