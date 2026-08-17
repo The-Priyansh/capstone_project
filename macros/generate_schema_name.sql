@@ -1,6 +1,6 @@
 {% macro generate_schema_name(custom_schema_name, node) %}
 
-    {% if target.name == 'prod' %}
+    {% if target.schema == 'DBT_PROD' %}
 
         {{ custom_schema_name | trim if custom_schema_name else target.schema }}
 
