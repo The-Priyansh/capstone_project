@@ -73,23 +73,23 @@ models:
 
     # Bronze layer
     bronze:
-      +schema: BRONZE
+      +schema:  "{{ env_var('DBT_BRONZE_SCHEMA') }}"
       +materialized: incremental
       +incremental_strategy: merge
       +unique_key: _SOURCE_FILE
 
     # Silver layer
     silver:
-      +schema: SILVER
+      +schema: "{{ env_var('DBT_SILVER_SCHEMA') }}"
       +materialized: table
 
     # Gold layer
     gold:
-      +schema: GOLD
+      +schema:  "{{ env_var('DBT_GOLD_SCHEMA') }}"
       +materialized: table
 
     reporting:
-      +schema: REPORTING
+      +schema: "{{ env_var('DBT_REPORTING_SCHEMA') }}"
       +materialized: view
       
   elementary:
@@ -97,4 +97,4 @@ models:
 
 snapshots:
   capstone_project:
-    +target_schema: SNAPSHOTS
+    +schema: "{{ env_var('DBT_SNAPSHOT_SCHEMA') }}"
